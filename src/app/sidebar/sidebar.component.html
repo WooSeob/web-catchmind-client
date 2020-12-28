@@ -1,0 +1,21 @@
+<div *ngIf="users.PUsers.length > 0">
+  <p class="list-title">게임중</p>
+  <ul id="ingameList">
+    <li *ngFor="let user of users.PUsers">
+      <div class="user-element">
+        <span>{{ user.score.score }}</span>
+        {{ user.name }}
+        <span *ngIf="user.score.correct">😄</span>
+        <span *ngIf="user.score.turn">✏</span>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<p class="list-title">대기실</p>
+<div id="userList">
+  <div class="user-element" *ngFor="let user of users.NpUsers">
+    <span>{{ user.name }}</span>
+    <span *ngIf="user.name == hostUser"> 🕹</span>
+  </div>
+</div>

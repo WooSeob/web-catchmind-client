@@ -1,0 +1,154 @@
+<div class="row justify-content-between">
+  <div class="col-md-10">
+    <h3>Room #{{ ROOM_ID }} - {{ myName }}</h3>
+  </div>
+  <div class="col-auto">
+    <h4 *ngIf="gameHandler.timerRun">⏳ {{ gameHandler.remainTime }}</h4>
+  </div>
+</div>
+
+<div
+  *ngIf="isHost && !gameHandler.isInGame"
+  id="host-section"
+  style="
+    border: 1px solid lightgray;
+    margin-bottom: 7px;
+    background-color: whitesmoke;
+    padding: 5px;
+  "
+>
+  <form
+    class="row g-2 justify-content-end align-items-center"
+    *ngIf="!gameHandler.isInGame"
+  >
+    <label for="game-round" class="col-auto">라운드</label>
+    <div class="col-auto">
+      <input
+        [(ngModel)]="setRound"
+        name="game-round"
+        type="text"
+        class="form-control btn-sm"
+        id="game-round"
+        value="2"
+      />
+    </div>
+    <label for="game-timeout" class="col-auto">제한시간</label>
+    <div class="col-auto">
+      <input
+        [(ngModel)]="setTimeout"
+        name="game-timeout"
+        type="text"
+        class="form-control btn-sm"
+        id="game-timeout"
+        value="20"
+        placeholder="초 단위로 입력"
+      />
+    </div>
+    <div class="col-auto">
+      <button
+        (click)="gameStart()"
+        type="submit"
+        class="btn btn-primary btn-sm"
+      >
+        게임 시작
+      </button>
+    </div>
+  </form>
+</div>
+<div class="row">
+  <div class="col-12 col-md-2">
+    <app-sidebar
+      [users]="users"
+      [hostUser]="hostUser"
+      style="padding: 0px; background-color: whitesmoke"
+    ></app-sidebar>
+  </div>
+  <div class="col-12 col-md-7" style="padding: 0px; height: 100%">
+    <div
+      id="word-section"
+      class="row justify-content-center"
+      style="padding-bottom: 7px"
+    >
+      <div
+        *ngIf="gameHandler.myTurn && gameHandler.isPrepare"
+        id="word-select"
+        class="col-auto"
+      >
+        <div class="btn-group" role="group" aria-label="Basic outlined example">
+          <button
+            type="button"
+            class="btn btn-outline-primary"
+            (click)="selectWord0()"
+          >
+            {{ gameHandler.words[0] }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-outline-primary"
+            (click)="selectWord1()"
+          >
+            {{ gameHandler.words[1] }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-outline-primary"
+            (click)="selectWord2()"
+          >
+            {{ gameHandler.words[2] }}
+          </button>
+        </div>
+      </div>
+      <h3 class="col-auto" *ngIf="gameHandler.myTurn && gameHandler.isGuess">
+        {{ gameHandler.word }}
+      </h3>
+      <h2 class="col-auto" *ngIf="!gameHandler.myTurn && gameHandler.isGuess">
+        {{ gameHandler.wordSecret }}
+      </h2>
+    </div>
+
+    <app-canvas></app-canvas>
+
+    <div class="input-group">
+      <input
+        [(ngModel)]="guess"
+        type="text"
+        class="form-control"
+        placeholder="Endter Guess!"
+        aria-describedby="basic-addon2"
+      />
+      <div class="input-group-append">
+        <button
+          (click)="checkGuess()"
+          class="btn btn-outline-primary"
+          type="button"
+        >
+          Guess
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-3">
+    <div style="border: 1px solid lightgray; background-color: whitesmoke">
+      <app-chat [chatContainer]="chatList"></app-chat>
+      <div class="input-group mb-3">
+        <input
+          [(ngModel)]="MsgToSend"
+          type="text"
+          class="form-control"
+          placeholder="메시지를 입력하세요."
+          aria-describedby="basic-addon2"
+        />
+        <div class="input-group-append">
+          <button
+            (click)="sendChat()"
+            class="btn btn-outline-primary"
+            type="button"
+          >
+            전송
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<p>test version</p>

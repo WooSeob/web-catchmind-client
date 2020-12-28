@@ -1,0 +1,15 @@
+ul {
+  list-style: none;
+  padding-left: 0px;
+}
+.user-element {
+  padding-left: 7px;
+  border: 1px solid lightgray;
+  background-color: whitesmoke;
+}
+.list-title {
+  margin: 0px;
+  padding-left: 7px;
+  background-color: rgb(8, 26, 32);
+  color: antiquewhite;
+}

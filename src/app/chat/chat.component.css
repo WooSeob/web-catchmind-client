@@ -1,0 +1,63 @@
+.chattingView {
+  overflow: auto;
+  height: 50vh;
+
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+}
+
+.e {
+  padding: 0px;
+}
+.row {
+  margin: 0px;
+}
+.msg {
+  height: auto;
+  width: 100%;
+  background-color: snow;
+  padding-left: 7px;
+  border: 1px solid whitesmoke;
+}
+
+.left {
+  float: left;
+}
+.right {
+  float: right;
+}
+
+.content {
+  border-radius: 10px;
+  width: auto;
+  border: 1px solid DodgerBlue;
+  padding: 5px 10px 5px 10px;
+  display: inline;
+}
+
+.chat-time {
+  padding-left: 10px;
+  padding-right: 10px;
+  display: inline;
+}
+
+.send {
+  display: inline;
+  width: 200px;
+  height: auto;
+}
+.-input {
+  height: 38px;
+}
+
+.system {
+  border-radius: 30px;
+  border: 1px solid gray;
+  background-color: gray;
+  text-align: center;
+  width: auto;
+  color: white;
+  padding: 5px 10px 5px 10px;
+  display: inline;
+}

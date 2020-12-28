@@ -1,0 +1,15 @@
+<div class="chattingView">
+  <div *ngFor="let chat of chatContainer.chats" style="padding: 0px">
+    <div class="row msg" *ngIf="chat.isSystem">
+      <span style="color: red">{{ chat.data }}</span>
+    </div>
+    <div class="row msg" *ngIf="!chat.isSystem">
+      <div class="col-12 col-md-3 e">
+        {{ chat.from }}
+      </div>
+      <div class="col-12 col-md-9 e">
+        {{ chat.data }}
+      </div>
+    </div>
+  </div>
+</div>
