@@ -1,20 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-// import { DataService } from '../data.service';
-
 import { Router, ActivatedRoute, ParamMap } from '@angular/router';
-import {
-  Draw,
-  User,
-  ChatContainer,
-  Chat,
-  JoinData,
-  CanvasController,
-  game_cmd_Handler,
-  UserContainer,
-} from '../draw';
+import { Draw, CanvasController } from '../draw';
 import { PhaseType } from '../message';
 import { io } from 'socket.io-client';
-
+import { GameController } from '../controller/game-controller';
+import { UserContainer } from '../model/user-container';
+import { Chat, ChatContainer } from '../model/chat-container';
+import { JoinData, User } from '../interfaces';
+import { GameModel } from '../model/game-model';
 @Component({
   selector: '',
   templateUrl: './room.component.html',
@@ -30,7 +23,6 @@ export class RoomComponent implements OnInit {
 
   users: UserContainer;
   chatList: ChatContainer;
-  gameHandler: game_cmd_Handler;
 
   private socket: any;
   private mySelf: User;
@@ -42,10 +34,15 @@ export class RoomComponent implements OnInit {
   public guess: String; // 보낼 정답
   public MsgToSend: string; // 보낼 채팅 메시지
 
+  private gameController: GameController;
+  public gameModel: GameModel;
+
   constructor(private route: ActivatedRoute) {
     this.ROOM_ID = route.snapshot.params['roomID'];
     this.mySelf = new User('user' + Math.floor(Math.random() * 1000));
     this.myName = this.mySelf.getName();
+    this.gameController = GameController.createInstance(this.mySelf);
+    this.gameModel = this.gameController.getModel();
   }
   sendChat(): void {
     this.socket.emit('chat-msg', this.MsgToSend);
@@ -56,17 +53,17 @@ export class RoomComponent implements OnInit {
     this.socket.emit('game-msg', this.guess);
   }
   selectWord0(): void {
-    if (this.gameHandler.myTurn) {
+    if (this.gameModel.myTurn) {
       this.socket.emit('game-msg', 0); //0, 1, 2 사이 인덱스
     }
   }
   selectWord1(): void {
-    if (this.gameHandler.myTurn) {
+    if (this.gameModel.myTurn) {
       this.socket.emit('game-msg', 1); //0, 1, 2 사이 인덱스
     }
   }
   selectWord2(): void {
-    if (this.gameHandler.myTurn) {
+    if (this.gameModel.myTurn) {
       this.socket.emit('game-msg', 2); //0, 1, 2 사이 인덱스
     }
   }
@@ -84,27 +81,24 @@ export class RoomComponent implements OnInit {
           timeout: this.setTimeout,
         },
       };
-      this.socket.emit('game-cmd', gameSetting);
-    }else{
-      alert("라운드는 1~4, 제한시간은 6~179초 이내로 입력해주세요")
+      if (!this.gameModel.isInGame) {
+        console.log("game-cmd, type 'start' msg emited", gameSetting);
+        this.socket.emit('game-cmd', gameSetting, (ack) => {
+          console.log("game-cmd, type 'start' ack received", ack);
+        });
+      }
+    } else {
+      alert('라운드는 1~4, 제한시간은 6~179초 이내로 입력해주세요');
     }
   }
 
   penUp() {
-    if (
-      this.mousedown &&
-      this.gameHandler.myTurn &&
-      this.gameHandler.phase == PhaseType.guess
-    ) {
+    if (this.mousedown && this.gameModel.myTurn && this.gameModel.isGuess) {
       this.socket.emit('draw cmd', { type: 'pen_up' });
     }
   }
   handleMouseEnter(e: any): void {
-    if (
-      this.mousedown &&
-      this.gameHandler.myTurn &&
-      this.gameHandler.phase == PhaseType.guess
-    ) {
+    if (this.mousedown && this.gameModel.myTurn && this.gameModel.isGuess) {
       //e : TouchEvent
       //e.touches : TouchList
       //e.touches[0] : Touch
@@ -144,14 +138,12 @@ export class RoomComponent implements OnInit {
     var canvas: any = document.getElementById('canvas');
 
     CanvasController.createInstance(canvas);
-    game_cmd_Handler.createInstance(this.mySelf);
     this.chatList = ChatContainer.getInstance();
-    this.gameHandler = game_cmd_Handler.getInstance();
     this.users = UserContainer.getInstance();
   }
   ngOnInit(): void {
-    // this.socket = io('ws://localhost:9999');
-    this.socket = io('ws://catchm1nd.herokuapp.com/');
+    this.socket = io('ws://localhost:9999');
+    // this.socket = io('ws://catchm1nd.herokuapp.com/');
 
     console.log(this.socket);
     this.initInstances(null);
@@ -165,7 +157,7 @@ export class RoomComponent implements OnInit {
       this.socket.emit('join', joinData);
 
       this.socket.on('draw cmd', (cmd) => {
-        if (!this.gameHandler.myTurn) {
+        if (!this.gameModel.myTurn) {
           console.log(cmd);
           if (cmd.type == 'draw') {
             CanvasController.getInstance().draw(cmd.data.X, cmd.data.Y);
@@ -187,16 +179,13 @@ export class RoomComponent implements OnInit {
           );
         } else if (msg.type == 'user-welcome') {
           // 새로온 유저에게 기존 리스트 전달
-          // msg.data {
-          //   host: string,
-          //   users: user[],
-          //   participants: user[]
-          // }
+          // msg.data { host: string, entireUsers: user[],  participants: user[] }
+          // TODO 현재 게임 상태 전달 꼭 받을것
           console.log('sys-msg : user-welcome received!!');
           console.log(msg.data);
           this.hostUser = msg.data.host;
           this.isHost = this.hostUser == this.myName;
-          this.users.setUsers(msg.data.users as User[]);
+          this.users.setUsers(msg.data.users);
           this.users.setParticipants(msg.data.participants);
         } else if (msg.type == 'user-join') {
           // 유저 접속
@@ -216,22 +205,25 @@ export class RoomComponent implements OnInit {
 
       this.socket.on('chat-msg', (msg) => {
         this.chatList.push(Chat.UserMsg(msg.from, msg.data));
-        
       });
 
-      this.socket.on(
-        'game-msg',
-        function (msg) {
-          game_cmd_Handler.getInstance().msg_Handler(msg);
-        }.bind(this)
-      );
+      // DDDDDDDDDDDDDDDDDDDDEPRECATEDDDDDDDDDDDDDDDDDDDDDDD@@@@@
+      // this.socket.on(
+      //   'game-msg11111111111111111',
+      //   function (msg) {
+      //     game_cmd_Handler.getInstance().msg_Handler(msg);
+      //   }.bind(this)
+      // );
 
-      this.socket.on(
-        'game-cmd',
-        function (cmd) {
-          game_cmd_Handler.getInstance().cmd_Handler(cmd);
-        }.bind(this)
-      );
+      // this.socket.on(
+      //   'game-cmd',
+      //   function (cmd) {
+      //     game_cmd_Handler.getInstance().cmd_Handler(cmd);
+      //   }.bind(this)
+      // );
+
+      this.socket.on('game-msg', this.gameController.msgHandler);
+      this.socket.on('game-sync', this.gameController.transition);
     });
 
     var canvas: any = document.getElementById('canvas');

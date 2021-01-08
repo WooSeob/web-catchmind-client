@@ -3,12 +3,12 @@
     <h3>Room #{{ ROOM_ID }} - {{ myName }}</h3>
   </div>
   <div class="col-auto">
-    <h4 *ngIf="gameHandler.timerRun">⏳ {{ gameHandler.remainTime }}</h4>
+    <h4 *ngIf="gameModel.timerRun">⏳ {{ gameModel.remainTime }}</h4>
   </div>
 </div>
 
 <div
-  *ngIf="isHost && !gameHandler.isInGame"
+  *ngIf="isHost && !gameModel.isInGame"
   id="host-section"
   style="
     border: 1px solid lightgray;
@@ -19,7 +19,7 @@
 >
   <form
     class="row g-2 justify-content-end align-items-center"
-    *ngIf="!gameHandler.isInGame"
+    *ngIf="!gameModel.isInGame"
   >
     <label for="game-round" class="col-auto">라운드</label>
     <div class="col-auto">
@@ -70,7 +70,7 @@
       style="padding-bottom: 7px"
     >
       <div
-        *ngIf="gameHandler.myTurn && gameHandler.isPrepare"
+        *ngIf="gameModel.myTurn && gameModel.isPrepare"
         id="word-select"
         class="col-auto"
       >
@@ -80,29 +80,29 @@
             class="btn btn-outline-primary"
             (click)="selectWord0()"
           >
-            {{ gameHandler.words[0] }}
+            {{ gameModel.words[0] }}
           </button>
           <button
             type="button"
             class="btn btn-outline-primary"
             (click)="selectWord1()"
           >
-            {{ gameHandler.words[1] }}
+            {{ gameModel.words[1] }}
           </button>
           <button
             type="button"
             class="btn btn-outline-primary"
             (click)="selectWord2()"
           >
-            {{ gameHandler.words[2] }}
+            {{ gameModel.words[2] }}
           </button>
         </div>
       </div>
-      <h3 class="col-auto" *ngIf="gameHandler.myTurn && gameHandler.isGuess">
-        {{ gameHandler.word }}
+      <h3 class="col-auto" *ngIf="gameModel.myTurn && gameModel.isGuess">
+        {{ gameModel.word }}
       </h3>
-      <h2 class="col-auto" *ngIf="!gameHandler.myTurn && gameHandler.isGuess">
-        {{ gameHandler.wordSecret }}
+      <h2 class="col-auto" *ngIf="!gameModel.myTurn && gameModel.isGuess">
+        {{ gameModel.wordSecret }}
       </h2>
     </div>
 

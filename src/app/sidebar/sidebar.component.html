@@ -1,7 +1,7 @@
-<div *ngIf="users.PUsers.length > 0">
+<div *ngIf="users.PUsersList.length > 0">
   <p class="list-title">게임중</p>
   <ul id="ingameList">
-    <li *ngFor="let user of users.PUsers">
+    <li *ngFor="let user of users.PUsersList">
       <div class="user-element">
         <span>{{ user.score.score }}</span>
         {{ user.name }}
@@ -14,7 +14,7 @@
 
 <p class="list-title">대기실</p>
 <div id="userList">
-  <div class="user-element" *ngFor="let user of users.NpUsers">
+  <div class="user-element" *ngFor="let user of users.NpUsersList">
     <span>{{ user.name }}</span>
     <span *ngIf="user.name == hostUser"> 🕹</span>
   </div>
