@@ -51,6 +51,7 @@ export class GameController {
   }
 
   public transition(dest: StateType) {
+    log('Transition : ' + dest);
     if (dest == StateType.ready) {
       this.gameModel.setReady();
       this.state = this.ready;

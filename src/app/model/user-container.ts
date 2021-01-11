@@ -28,15 +28,23 @@ export class UserContainer {
   }
 
   // 새롭게 방에 참가할때 받는 유저정보
-  setUsers(users: User[]): void {
+  restoreUsers(users: User[]): void {
     for (let user of users) {
-      this.NpUsers.set(user.name, new User(user.name).inflate(user));
+      if (user.isParticipant) {
+        this.PUsers.set(user.name, new User(user.name).inflate(user));
+      } else {
+        this.NpUsers.set(user.name, new User(user.name).inflate(user));
+      }
     }
+    this.updateList();
+
+    console.log('restore ', 'setUsers : ', this.NpUsers);
   }
 
   //새로운 유저가 들어올 때
   add(user: User): void {
     this.NpUsers.set(user.getName(), new User(user.name));
+    this.updateList();
   }
 
   sortParticipants(): void {}
@@ -70,41 +78,50 @@ export class UserContainer {
 
   resetParticipants(): void {
     //게임 끝나고 리셋
-    this.PUsers.forEach((user, userName, mapObj) => {
+    for (let userName of this.PUsers.keys()) {
+      let user = this.PUsers.get(userName);
       user.isParticipant = false;
       user.score = null;
+
       this.NpUsers.set(userName, user);
-    });
+      this.PUsers.delete(userName);
+    }
     this.updateList();
   }
-
   setParticipants(participants: string[]): void {
     // 1. 게임 시작될 때 GameModel.startGame()에서 호출
     // 2. 게임 진행중인 방에 새로 유저가 들어왔을때 romm component에서 호출
-    participants.forEach((p) => {
-      let target: User = this.NpUsers.get(p);
+
+    for (let userName of participants) {
+      let target: User = this.NpUsers.get(userName);
       target.isParticipant = true;
       target.score = new Score();
 
-      this.PUsers.set(p, target);
-      this.NpUsers.delete(p);
-    });
+      this.PUsers.set(userName, target);
+      this.NpUsers.delete(userName);
+    }
 
     this.updateList();
   }
 
   leaveUser(username: string): void {
     //유저 나갈때
-    this.NpUsers.forEach((user) => {
-      if (user.getName() === username) {
+
+    //NpUsers에서 검색
+    for (let userName of this.NpUsers.keys()) {
+      let user = this.NpUsers.get(userName);
+      if (user && user.getName() === username) {
         this.NpUsers.delete(username);
       }
-    });
-    this.PUsers.forEach((user) => {
-      if (user.getName() === username) {
+    }
+
+    //PUsers에서 검색
+    for (let userName of this.PUsers.keys()) {
+      let user = this.PUsers.get(userName);
+      if (user && user.getName() === username) {
         this.PUsers.delete(username);
       }
-    });
+    }
 
     this.updateList();
   }

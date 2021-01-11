@@ -13,6 +13,7 @@ export class Ready extends State {
   onMessage(msg) {
     switch (msg.key) {
       case KEY.GAME_RESULT:
+        console.log('게임 종료 처리');
         //TODO ~ 게임이 끝났습니다 ~
         let gameResult: Hit[] = msg.value;
         this.controller.gameModel.clearGame();

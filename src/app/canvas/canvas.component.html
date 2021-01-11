@@ -1,3 +1,131 @@
+<canvas id="canvas" style="width: 100%; border: 2px solid blue"> </canvas>
 
-  <canvas id="canvas" style="width: 100%; border: 2px solid blue"> </canvas>
+<div *ngIf="gameModel.myTurn">
+  <div
+    class="btn-group"
+    role="group"
+    aria-label="Basic radio toggle button group"
+  >
+    <input
+      type="radio"
+      class="btn-check"
+      name="btnradio"
+      id="btnradio1"
+      autocomplete="off"
+      (click)="selectPen()"
+      checked
+    />
+    <label class="btn btn-outline-primary" for="btnradio1">펜</label>
 
+    <input
+      type="radio"
+      class="btn-check"
+      name="btnradio"
+      id="btnradio2"
+      autocomplete="off"
+      (click)="selectErase()"
+    />
+    <label class="btn btn-outline-primary" for="btnradio2">지우개</label>
+  </div>
+
+  <div
+    class="btn-group"
+    role="group"
+    aria-label="Basic radio toggle button group"
+  >
+    <input
+      type="radio"
+      class="btn-check"
+      name="stroke"
+      id="stroke1"
+      autocomplete="off"
+      (click)="selectStrokeSmall()"
+      checked
+    />
+    <label class="btn btn-outline-primary" for="stroke1">얇게</label>
+
+    <input
+      type="radio"
+      class="btn-check"
+      name="stroke"
+      id="stroke2"
+      autocomplete="off"
+      (click)="selectStrokeMedium()"
+    />
+    <label class="btn btn-outline-primary" for="stroke2">보통</label>
+    <input
+      type="radio"
+      class="btn-check"
+      name="stroke"
+      id="stroke3"
+      autocomplete="off"
+      (click)="selectStrokeLarge()"
+    />
+    <label class="btn btn-outline-primary" for="stroke3">굵게</label>
+  </div>
+
+  <div
+    class="btn-group"
+    role="group"
+    aria-label="Basic radio toggle button group"
+  >
+    <input
+      type="radio"
+      class="btn-check"
+      name="color"
+      id="color1"
+      autocomplete="off"
+      (click)="selectColorBlack()"
+      checked
+    />
+    <label class="btn btn-outline-primary" for="color1">Black</label>
+
+    <input
+      type="radio"
+      class="btn-check"
+      name="color"
+      id="color2"
+      autocomplete="off"
+      (click)="selectColorRed()"
+    />
+    <label class="btn btn-outline-primary" for="color2">Red</label>
+    <input
+      type="radio"
+      class="btn-check"
+      name="color"
+      id="color3"
+      autocomplete="off"
+      (click)="selectColorGreen()"
+    />
+    <label class="btn btn-outline-primary" for="color3">Green</label>
+
+    <input
+      type="radio"
+      class="btn-check"
+      name="color"
+      id="color4"
+      autocomplete="off"
+      (click)="selectColorBlue()"
+    />
+    <label class="btn btn-outline-primary" for="color4">Blue</label>
+  </div>
+</div>
+
+<div class="input-group" *ngIf="!gameModel.myTurn">
+  <input
+    [(ngModel)]="guess"
+    type="text"
+    class="form-control"
+    placeholder="Endter Guess!"
+    aria-describedby="basic-addon2"
+  />
+  <div class="input-group-append">
+    <button
+      (click)="checkGuess()"
+      class="btn btn-outline-primary"
+      type="button"
+    >
+      Guess
+    </button>
+  </div>
+</div>

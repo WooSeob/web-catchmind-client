@@ -28,16 +28,18 @@ export class Prepare extends State {
     switch (msg.key) {
       case KEY.START:
         //TODO 한 게임당 최초 한번만 호출됨을 보장할 것
-        let startData: StartData = msg.value;
+        let startData: StartData = {
+          participants: msg.value,
+        };
         this.controller.gameModel.startGame(startData.participants);
 
         break;
 
       case KEY.NEW_TURN:
         let newTurnData: PrepareData = msg.value;
-        this.controller.gameModel.setWords(newTurnData.words);
-        this.controller.gameModel.setTurn(newTurnData.turn);
         this.controller.gameModel.setRound(newTurnData.round);
+        this.controller.gameModel.setTurn(newTurnData.turn);
+        this.controller.gameModel.setWords(newTurnData.words);
         break;
 
       case COMMON_KEY.TIMER:

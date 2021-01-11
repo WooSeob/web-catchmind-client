@@ -27,7 +27,9 @@ export class Guess extends State {
   onMessage(msg) {
     switch (msg.key) {
       case KEY.COMMITTED_WORD:
-        let committedWord: CommittedWord = msg.value;
+        let committedWord: CommittedWord = {
+          word: msg.value,
+        };
         this.controller.gameModel.setWord(committedWord.word);
         break;
 
@@ -35,7 +37,7 @@ export class Guess extends State {
         let hit: Hit = msg.value;
         UserContainer.getInstance().setCorrect(hit.user, hit.score);
         ChatContainer.getInstance().push(
-          Chat.SysMsg(msg.data.user + '가 맞췄습니다.')
+          Chat.SysMsg(hit.user + '가 맞췄습니다.')
         );
         break;
 

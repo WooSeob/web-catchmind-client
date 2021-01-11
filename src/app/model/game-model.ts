@@ -28,30 +28,23 @@ export class GameModel {
   }
 
   public startGame(participants: string[]) {
-    if (!this.isInGame) {
-      this.isInGame = true;
-      // 게임 시작
-      this.setParticipants(participants);
-      ChatContainer.getInstance().push(Chat.SysMsg('<<게임 시작>>'));
-    }
+    // 게임 시작
+    this.setParticipants(participants);
+    ChatContainer.getInstance().push(Chat.SysMsg('<<게임 시작>>'));
   }
 
   public clearGame() {
-    if (this.isInGame) {
-      this.isInGame = false;
-      // 게임 종료
-      this.timerRun = false;
-      this.myTurn = false;
-      this.isInGame = false;
-      this.word = '';
-      this.wordSecret = '';
-      ChatContainer.getInstance().push(Chat.SysMsg('<<게임이 끝났습니다.>>'));
-      // UserContainer.getInstance().PUsers.forEach((u) => {
-      //   let msg: string = `${u.getName()} : ${u.score.score} 점`;
-      //   ChatContainer.getInstance().push(Chat.SysMsg(msg));
-      // });
-      UserContainer.getInstance().resetParticipants();
-    }
+    // 게임 종료
+    this.timerRun = false;
+    this.myTurn = false;
+    this.word = '';
+    this.wordSecret = '';
+    ChatContainer.getInstance().push(Chat.SysMsg('<<게임이 끝났습니다.>>'));
+    UserContainer.getInstance().PUsersList.forEach((u) => {
+      let msg: string = `${u.getName()} : ${u.score.score} 점`;
+      ChatContainer.getInstance().push(Chat.SysMsg(msg));
+    });
+    UserContainer.getInstance().resetParticipants();
   }
   public setTimer(time: number) {
     this.remainTime = time;
@@ -107,20 +100,35 @@ export class GameModel {
     this.isResult = false;
   }
 
-  public setGuess() {
-    this.clearState();
-    this.isGuess = true;
-  }
   public setReady() {
     this.clearState();
     this.isReady = true;
+    this.timerRun = false;
+    if (this.isInGame) {
+      this.isInGame = false;
+    }
   }
   public setPrepare() {
     this.clearState();
-    this.isReady = true;
+    this.isPrepare = true;
+    //TODO TimerRun이 여기 있는게 과연 맞는가?
+    this.timerRun = true;
+    if (!this.isInGame) {
+      this.isInGame = true;
+    }
+  }
+  public setGuess() {
+    this.clearState();
+    this.isGuess = true;
+    if (!this.isInGame) {
+      this.isInGame = true;
+    }
   }
   public setResult() {
     this.clearState();
-    this.isReady = true;
+    this.isResult = true;
+    if (!this.isInGame) {
+      this.isInGame = true;
+    }
   }
 }

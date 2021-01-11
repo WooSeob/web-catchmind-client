@@ -106,48 +106,11 @@
       </h2>
     </div>
 
-    <app-canvas></app-canvas>
-
-    <div class="input-group">
-      <input
-        [(ngModel)]="guess"
-        type="text"
-        class="form-control"
-        placeholder="Endter Guess!"
-        aria-describedby="basic-addon2"
-      />
-      <div class="input-group-append">
-        <button
-          (click)="checkGuess()"
-          class="btn btn-outline-primary"
-          type="button"
-        >
-          Guess
-        </button>
-      </div>
-    </div>
+    <app-canvas [gameModel]="gameModel" [socket]="socket"></app-canvas>
   </div>
   <div class="col-12 col-md-3">
     <div style="border: 1px solid lightgray; background-color: whitesmoke">
-      <app-chat [chatContainer]="chatList"></app-chat>
-      <div class="input-group mb-3">
-        <input
-          [(ngModel)]="MsgToSend"
-          type="text"
-          class="form-control"
-          placeholder="메시지를 입력하세요."
-          aria-describedby="basic-addon2"
-        />
-        <div class="input-group-append">
-          <button
-            (click)="sendChat()"
-            class="btn btn-outline-primary"
-            type="button"
-          >
-            전송
-          </button>
-        </div>
-      </div>
+      <app-chat [chatContainer]="chatList" [socket]="socket"></app-chat>
     </div>
   </div>
 </div>
