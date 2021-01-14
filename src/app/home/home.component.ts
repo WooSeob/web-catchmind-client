@@ -10,6 +10,7 @@ import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
   styleUrls: ['./home.component.css'],
 })
 export class HomeComponent implements OnInit {
+  //git test
   @ViewChild('nickNameRequiredModal') nickNameRequiredModal: TemplateRef<any>;
   nickNameRequiredModalRef: NgbModalRef;
 
