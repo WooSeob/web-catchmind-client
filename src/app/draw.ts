@@ -1,9 +1,8 @@
 import { convertToParamMap } from '@angular/router';
 
 export class Draw {
-  X: number;
-  Y: number;
-  ratio: number;
+  NormX: number;
+  NormY: number;
 }
 export enum ModeType {
   PEN = 'pen',
@@ -65,15 +64,13 @@ export class CanvasController {
   private prevY: Number = -1;
   private strokeWidth: Number = 1;
   private strokeColor: string = 'black';
-  prevWidth: number;
-  resizeTimeout;
-  ratio;
-  myCanvasRatio;
-
-  prevRatio: number;
-  drawRatioCache: number;
+  
+  private prevWidth: number;
+  private resizeTimeout;
+  private restoreWidthRatio: number = 1;
 
   private devicePixelRatio: number = 1;
+
   public mode: DrawMode;
   public pen: DrawMode;
   public erase: DrawMode;
@@ -88,6 +85,11 @@ export class CanvasController {
     this.erase = new Erase(this);
     this.mode = this.pen;
   }
+  public initDrawingOptions() {
+    this.setStrokeColor('black');
+    this.setStrokeWidth(3);
+    this.setDrawMode(ModeType.PEN);
+  }
   public getStrokeWidth() {
     return this.strokeWidth;
   }
@@ -95,7 +97,7 @@ export class CanvasController {
     return this.strokeColor;
   }
   public setStrokeWidth(width: number) {
-    this.strokeWidth = width;
+    this.strokeWidth = width * this.devicePixelRatio;
   }
   public setStrokeColor(color: string) {
     this.strokeColor = color;
@@ -103,7 +105,8 @@ export class CanvasController {
   public msgHandler(msg) {
     // Turn 유저로부터 브로드 캐스팅 된 Draw Msg 를 기반으로 캔버스를 재현함
     if (msg.type == 'draw') {
-      this.draw(msg.data.X, msg.data.Y, msg.data.ratio);
+      console.log(msg.data)
+      this.draw(msg.data.NormX, msg.data.NormY);
     } else if (msg.type == 'pen_up') {
       this.penUp();
     } else if (msg.type == 'mode change') {
@@ -154,14 +157,11 @@ export class CanvasController {
     }
   }
 
-  draw(x: number, y: number, ratio: number): void {
-    if (this.prevRatio != ratio) {
-      //cache miss
-      this.drawRatioCache = this.myCanvasRatio / ratio;
-      this.prevRatio = ratio;
-    }
-
-    this.mode.draw(x * this.drawRatioCache, y * this.drawRatioCache);
+  draw(normalizedX: number, normalizedY: number): void {
+    this.mode.draw(
+      normalizedX * this.canvas.width,
+      normalizedY * this.canvas.height
+    );
   }
   penUp() {
     this.prevY = -1;
@@ -172,10 +172,8 @@ export class CanvasController {
     this.prevY = -1;
     this.prevX = -1;
   }
-  private init() {
-    if (window.devicePixelRatio) {
-      this.devicePixelRatio = window.devicePixelRatio;
-    }
+
+  public setCanvasSize() {
     const RATIO_16_10 = 0.625;
     const {
       width: hidefCanvasWidth,
@@ -195,15 +193,14 @@ export class CanvasController {
     );
     this.canvas.style.width = `${hidefCanvasCssWidth}px`;
     this.canvas.style.height = `${hidefCanvasCssHeight}px`;
-    // console.log('canvas init', this.devicePixelRatio);
-    this.ctx.scale(this.devicePixelRatio, this.devicePixelRatio);
+  }
 
-    this.myCanvasRatio = this.canvas.width / this.devicePixelRatio;
-
-    if (this.prevWidth != this.canvas.width) {
-      this.ratio = this.canvas.width / this.prevWidth;
-      this.prevWidth = this.canvas.width;
+  private init() {
+    if (window.devicePixelRatio) {
+      this.devicePixelRatio = window.devicePixelRatio;
     }
+    this.setCanvasSize();
+    this.prevWidth = this.canvas.width;
   }
 
   public resizeThrottler() {
@@ -217,6 +214,7 @@ export class CanvasController {
       );
     }
   }
+
   public actualResizeHandler() {
     //리사이즈 될 때 기존 캔버스 그림 저장후 변화된 스케일에 맞춰 복구함
     this.canvas.style.width = '100%';
@@ -224,12 +222,22 @@ export class CanvasController {
     let saved: CanvasImageSource = new Image();
     saved.src = this.canvas.toDataURL();
 
-    this.init();
+    this.setCanvasSize();
+
+    if (this.prevWidth != this.canvas.width) {
+      //실제 캔버스의 width가 변할때만 복구
+      this.restoreWidthRatio = this.canvas.width / this.prevWidth;
+      this.prevWidth = this.canvas.width;
+    }
+
     saved.onload = function () {
+      //모두지우고
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-      this.ctx.scale(this.ratio, this.ratio);
-      this.ratio = 1;
+      //기존의 그림을 바뀐 브라우저 사이즈의 스케일로 그려줌
+      this.ctx.scale(this.restoreWidthRatio, this.restoreWidthRatio);
+      this.restoreWidthRatio = 1;
       this.ctx.drawImage(saved, 0, 0);
+      //스케일 다시 1로 복구
       this.ctx.setTransform(1, 0, 0, 1, 0, 0);
     }.bind(this);
   }

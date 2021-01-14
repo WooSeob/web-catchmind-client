@@ -163,8 +163,9 @@ export class RoomComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.socket && this.socket.connected) {
       this.socket.disconnect();
     }
+    this.socket = io('ws://172.30.1.20:9999');
     // this.socket = io('ws://localhost:9999');
-    this.socket = io('ws://catchm1nd.herokuapp.com/');
+    // this.socket = io('ws://catchm1nd.herokuapp.com/');
 
     this.initInstances(null);
 
@@ -231,7 +232,6 @@ export class RoomComponent implements OnInit, AfterViewInit, OnDestroy {
       this.socket.on(
         'game-msg',
         function (msg) {
-          console.log('game-msg received ', msg);
           this.gameController.msgHandler(msg);
         }.bind(this)
       );

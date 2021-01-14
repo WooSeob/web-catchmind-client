@@ -29,12 +29,13 @@ abstract class Handler {
 }
 class MouseHandler extends Handler {
   handle(e): Draw {
-    var drawData: Draw = { X: 0, Y: 0, ratio: 0 };
+    var drawData: Draw = { NormX: 0, NormY: 0 };
 
+    var viewportOffset = this.component.canvas.getBoundingClientRect();
+    //(this.component.canvas.width / window.devicePixelRatio)
     drawData = {
-      X: e.offsetX,
-      Y: e.offsetY,
-      ratio: this.component.canvas.width / window.devicePixelRatio,
+      NormX: e.offsetX / viewportOffset.width,
+      NormY: e.offsetY / viewportOffset.height,
     };
 
     return drawData;
@@ -42,13 +43,14 @@ class MouseHandler extends Handler {
 }
 class TouchHandler extends Handler {
   handle(e): Draw {
-    console.log(e);
-    var drawData: Draw = { X: 0, Y: 0, ratio: 0 };
+    var drawData: Draw = { NormX: 0, NormY: 0 };
 
+    var viewportOffset = this.component.canvas.getBoundingClientRect();
     drawData = {
-      X: e.touches[0].pageX - e.target.offsetLeft,
-      Y: e.touches[0].pageY - e.target.offsetTop,
-      ratio: this.component.canvas.width / window.devicePixelRatio,
+      NormX:
+        (e.touches[0].clientX - viewportOffset.left) / viewportOffset.width,
+      NormY:
+        (e.touches[0].clientY - viewportOffset.top) / viewportOffset.height,
     };
 
     return drawData;
@@ -166,11 +168,7 @@ export class CanvasComponent implements OnInit {
     if (this.handler.isTimeToHandle()) {
       let drawData: Draw = this.handler.handle(e);
 
-      CanvasController.getInstance().draw(
-        drawData.X,
-        drawData.Y,
-        drawData.ratio
-      );
+      CanvasController.getInstance().draw(drawData.NormX, drawData.NormY);
 
       let msg = {
         type: 'draw',

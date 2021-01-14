@@ -1,3 +1,4 @@
+import { CanvasController } from 'src/app/draw';
 import { COMMON_KEY } from 'src/app/interfaces';
 import { Chat, ChatContainer } from 'src/app/model/chat-container';
 import { GameController } from '../game-controller';
@@ -40,6 +41,7 @@ export class Prepare extends State {
         this.controller.gameModel.setRound(newTurnData.round);
         this.controller.gameModel.setTurn(newTurnData.turn);
         this.controller.gameModel.setWords(newTurnData.words);
+        CanvasController.getInstance().initDrawingOptions()
         break;
 
       case COMMON_KEY.TIMER:

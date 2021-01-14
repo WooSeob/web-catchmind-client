@@ -29,8 +29,8 @@ export class HomeComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // this.socket = io('ws://localhost:9999');
-    this.socket = io('ws://catchm1nd.herokuapp.com/');
+    this.socket = io('ws://172.30.1.20:9999');
+    // this.socket = io('ws://catchm1nd.herokuapp.com/');
 
     this.socket.on('connect', () => {
       console.log('connected');
