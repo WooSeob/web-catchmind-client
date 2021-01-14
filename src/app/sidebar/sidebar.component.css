@@ -5,6 +5,8 @@ ul {
 .user-element {
   padding-left: 7px;
   border: 1px solid lightgray;
+}
+.others{
   background-color: whitesmoke;
 }
 .list-title {
@@ -12,4 +14,8 @@ ul {
   padding-left: 7px;
   background-color: rgb(8, 26, 32);
   color: antiquewhite;
+}
+
+.mySelf{
+  background-color:lightskyblue;
 }

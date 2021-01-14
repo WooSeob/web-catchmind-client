@@ -1,6 +1,6 @@
 <div class="row justify-content-between">
   <div class="col-md-10">
-    <h3>Room #{{ ROOM_ID }} - {{ myName }}</h3>
+    <h3>{{ myName }} @ Room{{ ROOM_ID }}</h3>
   </div>
   <div class="col-auto">
     <h4 *ngIf="gameModel.timerRun">⏳ {{ gameModel.remainTime }}</h4>
@@ -60,6 +60,7 @@
     <app-sidebar
       [users]="users"
       [hostUser]="hostUser"
+      [mySelf]="mySelf"
       style="padding: 0px; background-color: whitesmoke"
     ></app-sidebar>
   </div>
@@ -78,21 +79,21 @@
           <button
             type="button"
             class="btn btn-outline-primary"
-            (click)="selectWord0()"
+            (click)="selectWord('0')"
           >
             {{ gameModel.words[0] }}
           </button>
           <button
             type="button"
             class="btn btn-outline-primary"
-            (click)="selectWord1()"
+            (click)="selectWord('1')"
           >
             {{ gameModel.words[1] }}
           </button>
           <button
             type="button"
             class="btn btn-outline-primary"
-            (click)="selectWord2()"
+            (click)="selectWord('2')"
           >
             {{ gameModel.words[2] }}
           </button>
@@ -114,4 +115,26 @@
     </div>
   </div>
 </div>
+
+<ng-template #nickNameRequiredModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title" id="exampleModalLabel">닉네임을 설정해 주세요!</h5>
+  </div>
+  <div class="modal-body">
+    <form>
+      <div class="mb-3">
+        <label for="nick-name" class="col-form-label">닉네임 :</label>
+        <input type="text" class="form-control" id="nick-name" [(ngModel)]="setNickName" name="first"/>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-primary"  (click)="closeModal()">
+      설정
+    </button>
+  </div>
+</ng-template>
 <p>test version</p>
+<button class="btn btn-primary btn-sm" (click)="openModal(nickNameRequiredModal)">
+  닉네임 설정
+</button>

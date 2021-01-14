@@ -20,6 +20,8 @@
     class="form-control"
     placeholder="메시지를 입력하세요."
     aria-describedby="basic-addon2"
+    id="chat-input"
+    (keydown.enter)="sendChat()"
   />
   <div class="input-group-append">
     <button (click)="sendChat()" class="btn btn-outline-primary" type="button">

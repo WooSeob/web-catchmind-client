@@ -2,6 +2,7 @@ import { StateType, User } from '../interfaces';
 import { CanvasController } from '../draw';
 import { Chat, ChatContainer } from './chat-container';
 import { UserContainer } from './user-container';
+import { Hit } from '../controller/state/Guess';
 export class GameModel {
   public mySelf: User;
 
@@ -23,10 +24,30 @@ export class GameModel {
   public timerRun: boolean = false;
   public remainTime: number = 0;
 
+  public turnResult:Hit[];
+
   constructor(mySelf: User) {
-    this.mySelf = mySelf;
+    this.init(mySelf)
   }
 
+  public init(mySelf: User){
+    this.mySelf = mySelf;
+
+    this.isGuess = false;
+    this.isPrepare = false;
+    this.isResult = false;
+    this.isReady = false;
+    
+    this.words = []
+    this.word = ''
+    this.wordSecret = ''
+    
+    this.isInGame = false
+    this.myTurn = false
+    
+    this.timerRun = false
+    this.remainTime = 0
+  }
   public startGame(participants: string[]) {
     // 게임 시작
     this.setParticipants(participants);

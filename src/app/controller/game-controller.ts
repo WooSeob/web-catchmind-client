@@ -32,6 +32,9 @@ export class GameController {
     //최초 State는 Ready
     this.state = this.ready;
   }
+  public init(){
+    this.state = this.ready;
+  }
   public getModel(): GameModel {
     return this.gameModel;
   }

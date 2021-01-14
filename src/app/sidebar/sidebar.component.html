@@ -1,21 +1,33 @@
 <div *ngIf="users.PUsersList.length > 0">
   <p class="list-title">게임중</p>
-  <ul id="ingameList">
-    <li *ngFor="let user of users.PUsersList">
-      <div class="user-element">
+  <div id="ingameList">
+    <div *ngFor="let user of users.PUsersList" [ngSwitch]="user.name">
+      <div class="user-element mySlef"  *ngSwitchCase="mySelf.name">
         <span>{{ user.score.score }}</span>
         {{ user.name }}
         <span *ngIf="user.score.correct">😄</span>
         <span *ngIf="user.score.turn">✏</span>
       </div>
-    </li>
-  </ul>
+      <div class="user-element others" *ngSwitchDefault>
+        <span>{{ user.score.score }}</span>
+        {{ user.name }}
+        <span *ngIf="user.score.correct">😄</span>
+        <span *ngIf="user.score.turn">✏</span>
+      </div>
+    </div>
+  </div>
 </div>
 
 <p class="list-title">대기실</p>
 <div id="userList">
-  <div class="user-element" *ngFor="let user of users.NpUsersList">
-    <span>{{ user.name }}</span>
-    <span *ngIf="user.name == hostUser"> 🕹</span>
+  <div *ngFor="let user of users.NpUsersList" [ngSwitch]="user.name">
+    <div class="user-element mySelf" *ngSwitchCase="mySelf.name">
+      <span>{{ user.name }}</span>
+      <span *ngIf="user.name == hostUser"> 🕹</span>
+    </div>
+    <div class="user-element others" *ngSwitchDefault>
+      <span>{{ user.name }}</span>
+      <span *ngIf="user.name == hostUser"> 🕹</span>
+    </div>
   </div>
 </div>

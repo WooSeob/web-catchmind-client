@@ -31,6 +31,7 @@ export class Result extends State {
         // for (let user of scoreData) {
         //   UserContainer.getInstance().setCorrect(user.name, user.score);
         // }
+        this.controller.gameModel.turnResult = turnResult
         break;
 
       case KEY.TURN_USER_LEFT:

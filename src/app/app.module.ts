@@ -11,7 +11,8 @@ import { CanvasComponent } from './canvas/canvas.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ChatComponent } from './chat/chat.component';
-
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 // const config: SocketIoConfig = { url: 'http://localhost:9999', options: {} };
 
 @NgModule({
@@ -25,6 +26,7 @@ import { ChatComponent } from './chat/chat.component';
   ],
   imports: [
     BrowserModule,
+    BrowserAnimationsModule,
     AppRoutingModule,
     FormsModule,
     ReactiveFormsModule,
@@ -38,6 +40,7 @@ import { ChatComponent } from './chat/chat.component';
         component: RoomComponent,
       },
     ]),
+    NgbModule,
     // SocketIoModule.forRoot(config),
   ],
   providers: [],

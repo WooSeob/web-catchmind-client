@@ -2,14 +2,22 @@ import { useAnimation } from '@angular/animations';
 import { Observer, Score, User } from '../interfaces';
 
 export class UserContainer {
-  public NpUsersList: Array<User> = new Array<User>();
-  public PUsersList: Array<User> = new Array<User>();
+  public NpUsersList: Array<User>;
+  public PUsersList: Array<User>;
 
-  private NpUsers: Map<string, User> = new Map();
-  private PUsers: Map<string, User> = new Map();
+  private NpUsers: Map<string, User>;
+  private PUsers: Map<string, User>;
 
-  private constructor() {}
+  private constructor() {
+    this.init();
+  }
 
+  public init() {
+    this.NpUsersList = new Array<User>();
+    this.PUsersList = new Array<User>();
+    this.NpUsers = new Map();
+    this.PUsers = new Map();
+  }
   private static instance: UserContainer;
 
   static getInstance(): UserContainer {

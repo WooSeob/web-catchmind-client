@@ -1,4 +1,36 @@
-<canvas id="canvas" style="width: 100%; border: 2px solid blue"> </canvas>
+<div id="canvas-wrapper">
+  <canvas id="canvas" style="width: 100%; border: 2px solid blue"></canvas>
+
+  <div *ngIf="gameModel.isResult" @overlayTrigger class="overlay">
+    <div class="text">
+      <h2>제시어는 {{ gameModel.word }} 이었습니다!</h2>
+      <hr />
+      <div *ngFor="let hit of gameModel.turnResult">
+        <h3>{{ hit.user }} : +{{ hit.score }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <div
+    *ngIf="gameModel.myTurn && gameModel.isPrepare"
+    @overlayTrigger
+    class="overlay"
+  >
+    <div class="text">
+      <h2>세가지 제시어중 하나를 선택해주세요!</h2>
+    </div>
+  </div>
+
+  <div
+    *ngIf="!gameModel.myTurn && gameModel.isPrepare"
+    @overlayTrigger
+    class="overlay"
+  >
+    <div class="text">
+      <h2>{{ gameModel.turn }}의 차례입니다.</h2>
+    </div>
+  </div>
+</div>
 
 <div *ngIf="gameModel.myTurn">
   <div
@@ -39,7 +71,7 @@
       name="stroke"
       id="stroke1"
       autocomplete="off"
-      (click)="selectStrokeSmall()"
+      (click)="selectStrokeSize('3')"
       checked
     />
     <label class="btn btn-outline-primary" for="stroke1">얇게</label>
@@ -50,7 +82,7 @@
       name="stroke"
       id="stroke2"
       autocomplete="off"
-      (click)="selectStrokeMedium()"
+      (click)="selectStrokeSize('5')"
     />
     <label class="btn btn-outline-primary" for="stroke2">보통</label>
     <input
@@ -59,7 +91,7 @@
       name="stroke"
       id="stroke3"
       autocomplete="off"
-      (click)="selectStrokeLarge()"
+      (click)="selectStrokeSize('7')"
     />
     <label class="btn btn-outline-primary" for="stroke3">굵게</label>
   </div>
@@ -75,7 +107,7 @@
       name="color"
       id="color1"
       autocomplete="off"
-      (click)="selectColorBlack()"
+      (click)="selectColor('black')"
       checked
     />
     <label class="btn btn-outline-primary" for="color1">Black</label>
@@ -86,7 +118,7 @@
       name="color"
       id="color2"
       autocomplete="off"
-      (click)="selectColorRed()"
+      (click)="selectColor('red')"
     />
     <label class="btn btn-outline-primary" for="color2">Red</label>
     <input
@@ -95,7 +127,7 @@
       name="color"
       id="color3"
       autocomplete="off"
-      (click)="selectColorGreen()"
+      (click)="selectColor('green')"
     />
     <label class="btn btn-outline-primary" for="color3">Green</label>
 
@@ -105,10 +137,11 @@
       name="color"
       id="color4"
       autocomplete="off"
-      (click)="selectColorBlue()"
+      (click)="selectColor('blue')"
     />
     <label class="btn btn-outline-primary" for="color4">Blue</label>
   </div>
+  <button class="btn btn-primary" (click)="clearCanvas()">모두 지우기</button>
 </div>
 
 <div class="input-group" *ngIf="!gameModel.myTurn">
@@ -118,6 +151,8 @@
     class="form-control"
     placeholder="Endter Guess!"
     aria-describedby="basic-addon2"
+    id="guess-input"
+    (keydown.enter)="checkGuess()"
   />
   <div class="input-group-append">
     <button

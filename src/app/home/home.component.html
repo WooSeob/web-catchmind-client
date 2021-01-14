@@ -1,3 +1,72 @@
-<h1>Welcome to Catch M!nd!!</h1>
-<p routerLink="room/1234">Room#1234</p>
-<p routerLink="room/7777">Room#7777</p>
+<div class="row">
+  <h2 *ngIf="isNameExist" class="col-auto me-auto">
+    안녕하세요 {{ myName }} 님!
+  </h2>
+
+  <h2 *ngIf="!isNameExist" class="col-auto me-auto">
+    닉네임을 먼저 설정해 주세요
+  </h2>
+  <button
+    class="btn btn-primary btn col-auto"
+    (click)="openModal(nickNameRequiredModal)"
+  >
+    닉네임 설정
+  </button>
+</div>
+
+<div class="row justify-content-around">
+  <button
+    class="col-12 col-md-4 btn btn-outline-primary btn-lg"
+    (click)="makeRoom()"
+    [disabled]="matchInProgress"
+  >
+    <span
+      *ngIf="matchInProgress"
+      class="spinner-border spinner-border-lg"
+      role="status"
+      aria-hidden="true"
+    ></span>
+
+    방 만들기
+  </button>
+
+  <button
+    class="col-12 col-md-4 btn btn-outline-primary btn-lg"
+    (click)="searchRoom()"
+    [disabled]="matchInProgress"
+  >
+    <span
+      *ngIf="matchInProgress"
+      class="spinner-border spinner-border-lg"
+      role="status"
+      aria-hidden="true"
+    ></span>
+    게임 찾기
+  </button>
+</div>
+
+<ng-template #nickNameRequiredModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title" id="exampleModalLabel">닉네임을 설정해 주세요!</h5>
+  </div>
+  <div class="modal-body">
+    <form>
+      <div class="mb-3">
+        <label for="nick-name" class="col-form-label">닉네임 :</label>
+        <input
+          type="text"
+          class="form-control"
+          id="nick-name"
+          [(ngModel)]="setNickName"
+          name="first"
+        />
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-primary" (click)="closeModal()">
+      설정
+    </button>
+  </div>
+</ng-template>
+<p>test version</p>

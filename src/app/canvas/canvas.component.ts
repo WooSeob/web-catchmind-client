@@ -1,26 +1,126 @@
 import { Component, OnInit, Input } from '@angular/core';
+import { isThisTypeNode } from 'typescript';
 import { ModeType, Draw, CanvasController } from '../draw';
 import { GameModel } from '../model/game-model';
+
+import { HostBinding } from '@angular/core';
+import {
+  trigger,
+  state,
+  style,
+  animate,
+  transition,
+  // ...
+} from '@angular/animations';
+
+abstract class Handler {
+  component: CanvasComponent;
+  constructor(component: CanvasComponent) {
+    this.component = component;
+  }
+  abstract handle(e: any): Draw;
+  isTimeToHandle() {
+    return (
+      this.component.mousedown &&
+      this.component.gameModel.myTurn &&
+      this.component.gameModel.isGuess
+    );
+  }
+}
+class MouseHandler extends Handler {
+  handle(e): Draw {
+    var drawData: Draw = { X: 0, Y: 0, ratio: 0 };
+
+    drawData = {
+      X: e.offsetX,
+      Y: e.offsetY,
+      ratio: this.component.canvas.width / window.devicePixelRatio,
+    };
+
+    return drawData;
+  }
+}
+class TouchHandler extends Handler {
+  handle(e): Draw {
+    console.log(e);
+    var drawData: Draw = { X: 0, Y: 0, ratio: 0 };
+
+    drawData = {
+      X: e.touches[0].pageX - e.target.offsetLeft,
+      Y: e.touches[0].pageY - e.target.offsetTop,
+      ratio: this.component.canvas.width / window.devicePixelRatio,
+    };
+
+    return drawData;
+  }
+}
+
+class DefaultHandler extends Handler {
+  handle(e): Draw {
+    if (e instanceof MouseEvent) {
+      this.component.setHandler(this.component.mouseHandler);
+    } else if (e instanceof TouchEvent) {
+      this.component.setHandler(this.component.touchHandler);
+    }
+    return this.component.handler.handle(e);
+  }
+}
 
 @Component({
   selector: 'app-canvas',
   templateUrl: './canvas.component.html',
   styleUrls: ['./canvas.component.css'],
+  animations: [
+    trigger('overlayTrigger', [
+      transition(':enter', [
+        style({ opacity: 0 }),
+        animate('700ms', style({ opacity: 1 })),
+      ]),
+      transition(':leave', [animate('700ms', style({ opacity: 0 }))]),
+    ]),
+  ],
 })
 export class CanvasComponent implements OnInit {
   @Input() gameModel: GameModel;
   @Input() socket: any;
-  private mousedown: boolean = false;
+  public inputElement: HTMLInputElement;
+  public mousedown: boolean = false;
   public guess: String; // 보낼 정답
-
+  public canvas: HTMLCanvasElement;
   public strokeWidth: number;
 
-  checkGuess(): void {
-    console.log(this.guess + ' guess 전송');
-    this.socket.emit('game-msg', this.guess);
+  defaultHandler: Handler;
+  touchHandler: Handler;
+  mouseHandler: Handler;
+  handler: Handler;
+  setHandler(handler: Handler) {
+    this.handler = handler;
   }
-  constructor() {}
+  checkGuess(): void {
+    if (this.guess !== '') {
+      this.socket.emit('game-msg', this.guess);
+      this.inputElement.value = '';
+      this.guess = '';
+    } else {
+      alert('단어를 입력해 주세요.');
+    }
+  }
+  constructor() {
+    this.defaultHandler = new DefaultHandler(this);
+    this.touchHandler = new TouchHandler(this);
+    this.mouseHandler = new MouseHandler(this);
 
+    this.handler = this.defaultHandler;
+  }
+
+  clearCanvas(): void {
+    CanvasController.getInstance().clear();
+    let msg = {
+      type: 'canvas clear',
+      data: null,
+    };
+    this.socket.emit('draw cmd', msg);
+  }
   selectPen(): void {
     console.log('selectPen');
     this.selectMode(ModeType.PEN);
@@ -38,17 +138,8 @@ export class CanvasComponent implements OnInit {
     this.socket.emit('draw cmd', msg);
   }
 
-  selectStrokeSmall() {
-    this.selectStroke(3);
-  }
-  selectStrokeMedium() {
-    this.selectStroke(5);
-  }
-  selectStrokeLarge() {
-    this.selectStroke(7);
-  }
-  private selectStroke(width) {
-    CanvasController.getInstance().setStrokeWidth(width);
+  selectStrokeSize(width: string) {
+    CanvasController.getInstance().setStrokeWidth(parseInt(width));
     let msg = {
       type: 'width change',
       data: width,
@@ -56,19 +147,7 @@ export class CanvasComponent implements OnInit {
     this.socket.emit('draw cmd', msg);
   }
 
-  selectColorBlack() {
-    this.selectColor('black');
-  }
-  selectColorRed() {
-    this.selectColor('red');
-  }
-  selectColorGreen() {
-    this.selectColor('green');
-  }
-  selectColorBlue() {
-    this.selectColor('blue');
-  }
-  private selectColor(color: string) {
+  selectColor(color: string) {
     CanvasController.getInstance().setStrokeColor(color);
     let msg = {
       type: 'color change',
@@ -82,61 +161,48 @@ export class CanvasComponent implements OnInit {
       this.socket.emit('draw cmd', { type: 'pen_up' });
     }
   }
-  handleMouseEnter(e: any): void {
-    if (this.mousedown && this.gameModel.myTurn && this.gameModel.isGuess) {
-      //e : TouchEvent
-      //e.touches : TouchList
-      //e.touches[0] : Touch
-      //e.touches[0].pageX
-      let isMoblie = false;
 
-      var drawData: Draw = { X: 0, Y: 0 };
-      if (e instanceof MouseEvent) {
-        drawData = { X: e.offsetX, Y: e.offsetY };
-      } else if (e instanceof TouchEvent) {
-        isMoblie = true;
-      }
-      if (isMoblie) {
-        console.log(e);
-        drawData = {
-          X: e.touches[0].pageX - e.target.offsetLeft,
-          Y: e.touches[0].pageY - e.target.offsetTop,
-        };
-      }
-      // console.log(e)
-      // console.log('X: ' + e.pageX + ', Y: ' + e.pageY); //-> "mouseenter"
-      CanvasController.getInstance().draw(drawData.X, drawData.Y);
+  handleMouseEnter(e: any): void {
+    if (this.handler.isTimeToHandle()) {
+      let drawData: Draw = this.handler.handle(e);
+
+      CanvasController.getInstance().draw(
+        drawData.X,
+        drawData.Y,
+        drawData.ratio
+      );
 
       let msg = {
         type: 'draw',
         data: drawData,
       };
       this.socket.emit('draw cmd', msg);
-      // this.dataService.sendMessage(data);
     }
   }
 
   ngOnInit(): void {
-    var canvas: any = document.getElementById('canvas');
-    CanvasController.createInstance(canvas);
+    this.inputElement = <HTMLInputElement>(
+      document.getElementById('guess-input')
+    );
+    this.canvas = document.getElementById('canvas') as HTMLCanvasElement;
 
-    console.log(canvas);
+    CanvasController.createInstance(this.canvas);
 
-    canvas.addEventListener(
+    this.canvas.addEventListener(
       'mousemove',
       function (e) {
         this.handleMouseEnter(e);
       }.bind(this),
       false
     );
-    canvas.addEventListener(
+    this.canvas.addEventListener(
       'mousedown',
       function (e) {
         this.mousedown = true;
       }.bind(this),
       false
     );
-    canvas.addEventListener(
+    this.canvas.addEventListener(
       'mouseup',
       function (e) {
         this.penUp();
@@ -145,7 +211,7 @@ export class CanvasComponent implements OnInit {
       }.bind(this),
       false
     );
-    canvas.addEventListener(
+    this.canvas.addEventListener(
       'touchstart',
       function (e) {
         e.preventDefault();
@@ -154,7 +220,7 @@ export class CanvasComponent implements OnInit {
       }.bind(this),
       false
     );
-    canvas.addEventListener(
+    this.canvas.addEventListener(
       'touchmove',
       function (e) {
         e.preventDefault();
@@ -162,7 +228,7 @@ export class CanvasComponent implements OnInit {
       }.bind(this),
       false
     );
-    canvas.addEventListener(
+    this.canvas.addEventListener(
       'touchend',
       function (e) {
         e.preventDefault();

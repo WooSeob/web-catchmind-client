@@ -1,4 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  Input,
+  TemplateRef,
+  ViewChild,
+  AfterViewInit,
+  OnDestroy
+} from '@angular/core';
 import { Router, ActivatedRoute, ParamMap } from '@angular/router';
 import { Draw, CanvasController } from '../draw';
 import { PhaseType } from '../message';
@@ -8,13 +16,29 @@ import { UserContainer } from '../model/user-container';
 import { Chat, ChatContainer } from '../model/chat-container';
 import { JoinData, User } from '../interfaces';
 import { GameModel } from '../model/game-model';
+import { AuthenticationService } from '../authentication.service';
+import {
+  NgbModal,
+  ModalDismissReasons,
+  NgbModalRef,
+} from '@ng-bootstrap/ng-bootstrap';
+
+import { Socket } from 'socket.io-client';
 @Component({
   selector: '',
   templateUrl: './room.component.html',
   styleUrls: ['./room.component.css'],
 })
-export class RoomComponent implements OnInit {
-  myName: string;
+export class RoomComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('nickNameRequiredModal') nickNameRequiredModal: TemplateRef<any>;
+  @Input() nickName: string;
+
+  nickNameRequiredModalRef: NgbModalRef;
+  setNickName: string;
+
+  mySelf: User;
+  myID: string;
+  myName: string = 'unknown';
 
   hostUser: string;
   isHost: boolean = false;
@@ -22,8 +46,8 @@ export class RoomComponent implements OnInit {
   users: UserContainer;
   chatList: ChatContainer;
 
-  socket: any;
-  private mySelf: User;
+  socket: Socket;
+  // private mySelf: User;
   ROOM_ID: string = '7777';
 
   public setTimeout: number;
@@ -33,29 +57,76 @@ export class RoomComponent implements OnInit {
   public gameModel: GameModel;
   private canvasController: CanvasController;
 
-  constructor(private route: ActivatedRoute) {
-    this.ROOM_ID = route.snapshot.params['roomID'];
-    this.mySelf = new User('user' + Math.floor(Math.random() * 1000));
+  connectionTry;
+
+  closeResult = '';
+
+  setMySelf(user: User) {
+    this.mySelf = user;
     this.myName = this.mySelf.getName();
-    this.gameController = GameController.createInstance(this.mySelf);
-    this.gameModel = this.gameController.getModel();
+    this.connect();
+  }
+  ngAfterViewInit() {
+    if (this.authService.isMemberExist()) {
+      this.setMySelf(new User(this.authService.getUserFullID()));
+    } else {
+      this.openModal(this.nickNameRequiredModal);
+    }
+  }
+  ngOnDestroy(){
+    if(this.socket.connected){
+      this.socket.disconnect()
+    }
   }
 
-  selectWord0(): void {
-    if (this.gameModel.myTurn) {
-      this.socket.emit('game-msg', 0); //0, 1, 2 사이 인덱스
+  join() {
+    // Room에 접속시도
+    if (this.gameModel.mySelf.getName() !== 'unknown-user') {
+      let joinData: JoinData = {
+        roomID: this.ROOM_ID,
+        user: this.gameModel.mySelf,
+      };
+      this.socket.emit('join', joinData);
+    } else {
+      alert('유저 이름을 설정해주세요.');
     }
   }
-  selectWord1(): void {
-    if (this.gameModel.myTurn) {
-      this.socket.emit('game-msg', 1); //0, 1, 2 사이 인덱스
+  openModal(content) {
+    this.nickNameRequiredModalRef = this.modalService.open(content, {
+      ariaLabelledBy: 'modal-basic-title',
+      backdrop: 'static',
+      animation: true,
+    });
+  }
+  public closeModal() {
+    this.authService.setNoMemberName(this.setNickName);
+    this.setMySelf(new User(this.authService.getUserFullID()));
+    this.nickNameRequiredModalRef.close();
+  }
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private authService: AuthenticationService,
+    private modalService: NgbModal
+  ) {
+    this.ROOM_ID = route.snapshot.params['roomID'];
+
+    this.mySelf = new User('unknown-user');
+
+    this.gameController = GameController.createInstance(this.mySelf);
+    this.gameModel = this.gameController.getModel();
+
+    this.chatList = ChatContainer.getInstance();
+    this.users = UserContainer.getInstance();
+  }
+
+  selectWord(idx: string): void {
+    if (this.gameModel.myTurn && parseInt(idx) >= 0 && parseInt(idx) < 3) {
+      this.socket.emit('game-msg', idx); //0, 1, 2 사이 인덱스
     }
   }
-  selectWord2(): void {
-    if (this.gameModel.myTurn) {
-      this.socket.emit('game-msg', 2); //0, 1, 2 사이 인덱스
-    }
-  }
+
   gameStart(): void {
     if (
       this.setRound > 0 &&
@@ -83,24 +154,24 @@ export class RoomComponent implements OnInit {
       console.log('disconnected');
       console.log(reason);
     }
-
-    this.chatList = ChatContainer.getInstance();
-    this.users = UserContainer.getInstance();
+    this.gameController.init();
+    this.gameModel.init(this.mySelf);
+    this.users.init();
   }
-  ngOnInit(): void {
-    this.socket = io('ws://localhost:9999');
-    // this.socket = io('ws://catchm1nd.herokuapp.com/');
 
-    console.log(this.socket);
+  connect() {
+    if (this.socket && this.socket.connected) {
+      this.socket.disconnect();
+    }
+    // this.socket = io('ws://localhost:9999');
+    this.socket = io('ws://catchm1nd.herokuapp.com/');
+
     this.initInstances(null);
 
+    console.log(this.socket);
     this.socket.on('connect', () => {
-      let joinData: JoinData = {
-        roomID: this.ROOM_ID,
-        user: this.mySelf,
-      };
-      console.log(joinData);
-      this.socket.emit('join', joinData);
+      console.log('connect');
+      this.join();
 
       this.socket.on(
         'draw cmd',
@@ -111,7 +182,7 @@ export class RoomComponent implements OnInit {
         }.bind(this)
       );
 
-      this.socket.on('disconnect', this.initInstances);
+      // this.socket.on('disconnect', this.initInstances);
 
       this.socket.on('sys-msg', (msg) => {
         // 1. 호스트 변경
@@ -123,6 +194,7 @@ export class RoomComponent implements OnInit {
           );
         } else if (msg.type == 'user-welcome') {
           // 새로온 유저 - 기존 게임 State 복원
+          //TODO 그림이미지도 복원받기
           // msg.data { host: string, entireUsers: user[]}
           console.log('restore', 'sys-msg : user-welcome received!!');
           console.log('restore', msg.data);
@@ -132,7 +204,7 @@ export class RoomComponent implements OnInit {
         } else if (msg.type == 'user-join') {
           // 유저 접속
           console.log('userjoin' + msg.data);
-          if (msg.data != this.mySelf.getName()) {
+          if (msg.data != this.gameModel.mySelf.getName()) {
             this.users.add(new User(msg.data));
           }
           this.chatList.push(Chat.SysMsg(msg.data + '가 입장했습니다.'));
@@ -142,6 +214,13 @@ export class RoomComponent implements OnInit {
           console.log('userleave ' + msg.data);
           this.users.leaveUser(msg.data);
           this.chatList.push(Chat.SysMsg(msg.data + '가 게임을 떠났습니다.'));
+        } else if (msg.type == 'room-not-found') {
+          //존재하지 않는 방에 입장한 경우
+          alert('존재하지 않는 방입니다.');
+          this.router.navigateByUrl(`/`);
+        } else if (msg.type == "kick"){
+          this.router.navigateByUrl(`/`);
+          alert('추방 당했습니다.');
         }
       });
 
@@ -163,5 +242,8 @@ export class RoomComponent implements OnInit {
         }.bind(this)
       );
     });
+  }
+  ngOnInit(): void {
+    this.initInstances(null);
   }
 }

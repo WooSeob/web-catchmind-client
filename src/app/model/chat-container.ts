@@ -19,7 +19,12 @@ export class Chat {
 }
 export class ChatContainer {
   private static instance: ChatContainer;
-  private constructor() {}
+  public chats: Chat[] = [];
+  
+  private constructor() {
+    
+  }
+
   static getInstance() {
     if (ChatContainer.instance) {
       return ChatContainer.instance;
@@ -29,11 +34,12 @@ export class ChatContainer {
     }
   }
 
-  chats: Chat[] = [];
   push(msg: Chat) {
     this.chats.push(msg);
     //스크롤 최하단 고정
-    let ele = document.querySelector('.chattingView');
-    ele.scrollTop = ele.scrollHeight;
+    setTimeout(function(){
+      let chatViewEle = document.querySelector('.chattingView')
+      chatViewEle.scrollTop = chatViewEle.scrollHeight;
+    }, 10);
   }
 }
