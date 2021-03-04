@@ -1,22 +1,20 @@
-<div class="row">
-  <h2 *ngIf="isNameExist" class="col-auto me-auto">
-    안녕하세요 {{ myName }} 님!
-  </h2>
+<div class="row" style="margin-top: 10px;">
+  <h3 *ngIf="isNameExist" class="col-8 col-md-10  col-lg-11">안녕하세요 <br>{{ myName }} 님!</h3>
 
-  <h2 *ngIf="!isNameExist" class="col-auto me-auto">
+  <h3 *ngIf="!isNameExist" class="col-8 col-md-10 col-lg-11">
     닉네임을 먼저 설정해 주세요
-  </h2>
+  </h3>
   <button
-    class="btn btn-primary btn col-auto"
+    class="btn btn-primary btn col-4 col-md-2 col-lg-1"
     (click)="openModal(nickNameRequiredModal)"
   >
     닉네임 설정
   </button>
 </div>
 
-<div class="row justify-content-around">
+<div class="row justify-content-around" style="margin-top: 40px;">
   <button
-    class="col-12 col-md-4 btn btn-outline-primary btn-lg"
+    class="col-6 col-md-4 btn btn-outline-primary btn-lg"
     (click)="makeRoom()"
     [disabled]="matchInProgress"
   >
@@ -31,7 +29,7 @@
   </button>
 
   <button
-    class="col-12 col-md-4 btn btn-outline-primary btn-lg"
+    class="col-6 col-md-4 btn btn-outline-primary btn-lg"
     (click)="searchRoom()"
     [disabled]="matchInProgress"
   >
@@ -43,6 +41,22 @@
     ></span>
     게임 찾기
   </button>
+</div>
+
+<div class="row" style="margin-top: 40px; margin-bottom: 40px;">
+  <h4>공지사항</h4>
+  <ul>
+    <li>
+      테스트 버전이라서 아직 불안정한 부분이 많습니다😅 버그 리포트는 에타
+      댓글이나 쪽지 이용해주세요
+    </li>
+    <li>
+      채팅창에서 /add 원하는단어 입력하면 단어가 일시적으로 추가됩니다. (영구적으로 추가되진 않지만 많이 추가된 단어 순으로 업데이트 할 예정입니다.)
+    </li>
+    <li>
+      "방 검색 허용"을 체크 해제하면 로비에서 게임 찾기를 할때 검색되지 않습니다. (링크로는 접속가능합니다.)
+    </li>
+  </ul>
 </div>
 
 <ng-template #nickNameRequiredModal let-modal>
@@ -69,4 +83,4 @@
     </button>
   </div>
 </ng-template>
-<p>test version</p>
+

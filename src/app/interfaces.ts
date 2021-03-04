@@ -51,6 +51,7 @@ export class User implements inflatable {
 
 export class Score implements inflatable {
   constructor() {
+    this.turnScore = 0
     this.score = 0;
     this.correct = false;
     this.turn = false;
@@ -59,15 +60,19 @@ export class Score implements inflatable {
     this.score = scoreLike.score;
     this.correct = scoreLike.correct;
     this.turn = scoreLike.turn;
+    //TODO turnScore는?
     return this;
   }
   matched(score: number) {
     this.correct = true;
     this.score += score;
+    this.turnScore = score;
   }
   turnClear() {
+    this.turnScore = 0;
     this.correct = false;
   }
+  turnScore: number;
   score: number;
   correct: boolean;
   turn: boolean;

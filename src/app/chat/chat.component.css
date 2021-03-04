@@ -4,7 +4,7 @@
 
   display: flex;
   flex-direction: column;
-  flex-wrap: nowrap;
+  border: 1px solid lightgray; background-color: whitesmoke
 }
 
 .e {

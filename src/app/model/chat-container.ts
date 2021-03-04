@@ -24,7 +24,9 @@ export class ChatContainer {
   private constructor() {
     
   }
-
+  public init(){
+    this.chats = []
+  }
   static getInstance() {
     if (ChatContainer.instance) {
       return ChatContainer.instance;

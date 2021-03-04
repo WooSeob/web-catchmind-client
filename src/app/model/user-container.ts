@@ -1,4 +1,5 @@
 import { useAnimation } from '@angular/animations';
+import { Hit } from '../controller/state/Guess';
 import { Observer, Score, User } from '../interfaces';
 
 export class UserContainer {
@@ -59,7 +60,7 @@ export class UserContainer {
   setCorrect(username: string, score: number): void {
     // 맞췄을때
     this.PUsers.forEach((user) => {
-      if (user.getName() === username) {
+      if (user.getName() === username && !user.score.correct) {
         user.score.matched(score);
         console.log('score : ', user.score.score);
       }
@@ -132,6 +133,16 @@ export class UserContainer {
     }
 
     this.updateList();
+  }
+
+  syncScores(hits: Hit[]){
+    hits.forEach(hit => {
+      let target = this.PUsers.get(hit.user);
+      if(target.score.score != hit.score){
+        console.log("점수 싱크가 맞지 않습니다.")
+        target.score.score = hit.score
+      }
+    })
   }
 
   getParticipants(): User[] {

@@ -5,7 +5,7 @@ import {
   TemplateRef,
   ViewChild,
   AfterViewInit,
-  OnDestroy
+  OnDestroy,
 } from '@angular/core';
 import { Router, ActivatedRoute, ParamMap } from '@angular/router';
 import { Draw, CanvasController } from '../draw';
@@ -22,6 +22,7 @@ import {
   ModalDismissReasons,
   NgbModalRef,
 } from '@ng-bootstrap/ng-bootstrap';
+import { FormBuilder, FormGroup } from '@angular/forms';
 
 import { Socket } from 'socket.io-client';
 @Component({
@@ -34,7 +35,7 @@ export class RoomComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() nickName: string;
 
   nickNameRequiredModalRef: NgbModalRef;
-  setNickName: string;
+  setNickName: string = "";
 
   mySelf: User;
   myID: string;
@@ -57,9 +58,7 @@ export class RoomComponent implements OnInit, AfterViewInit, OnDestroy {
   public gameModel: GameModel;
   private canvasController: CanvasController;
 
-  connectionTry;
-
-  closeResult = '';
+  public checkboxGroupForm: FormGroup;
 
   setMySelf(user: User) {
     this.mySelf = user;
@@ -73,9 +72,9 @@ export class RoomComponent implements OnInit, AfterViewInit, OnDestroy {
       this.openModal(this.nickNameRequiredModal);
     }
   }
-  ngOnDestroy(){
-    if(this.socket.connected){
-      this.socket.disconnect()
+  ngOnDestroy() {
+    if (this.socket.connected) {
+      this.socket.disconnect();
     }
   }
 
@@ -99,16 +98,21 @@ export class RoomComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
   public closeModal() {
-    this.authService.setNoMemberName(this.setNickName);
-    this.setMySelf(new User(this.authService.getUserFullID()));
-    this.nickNameRequiredModalRef.close();
+    if (this.setNickName != '' && this.setNickName.length < 7) {
+      this.authService.setNoMemberName(this.setNickName);
+      this.setMySelf(new User(this.authService.getUserFullID()));
+      this.nickNameRequiredModalRef.close();
+    } else {
+      alert('닉네임은 6자 이하로 입력해 주세요.');
+    }
   }
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private authService: AuthenticationService,
-    private modalService: NgbModal
+    private modalService: NgbModal,
+    private formBuilder: FormBuilder
   ) {
     this.ROOM_ID = route.snapshot.params['roomID'];
 
@@ -151,11 +155,12 @@ export class RoomComponent implements OnInit, AfterViewInit, OnDestroy {
 
   initInstances(reason) {
     if (reason) {
-      console.log('disconnected');
-      console.log(reason);
+      //console.log('disconnected');
+      //console.log(reason);
     }
     this.gameController.init();
     this.gameModel.init(this.mySelf);
+    this.chatList.init();
     this.users.init();
   }
 
@@ -163,15 +168,15 @@ export class RoomComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.socket && this.socket.connected) {
       this.socket.disconnect();
     }
-    this.socket = io('ws://172.30.1.20:9999');
+    // this.socket = io('ws://172.30.1.20:9999');
     // this.socket = io('ws://localhost:9999');
-    // this.socket = io('ws://catchm1nd.herokuapp.com/');
+    this.socket = io('ws://catchm1nd.herokuapp.com/');
 
     this.initInstances(null);
 
-    console.log(this.socket);
+    //console.log(this.socket);
     this.socket.on('connect', () => {
-      console.log('connect');
+      //console.log('connect');
       this.join();
 
       this.socket.on(
@@ -197,14 +202,14 @@ export class RoomComponent implements OnInit, AfterViewInit, OnDestroy {
           // 새로온 유저 - 기존 게임 State 복원
           //TODO 그림이미지도 복원받기
           // msg.data { host: string, entireUsers: user[]}
-          console.log('restore', 'sys-msg : user-welcome received!!');
-          console.log('restore', msg.data);
+          //console.log('restore', 'sys-msg : user-welcome received!!');
+          //console.log('restore', msg.data);
           this.hostUser = msg.data.host;
           this.isHost = this.hostUser == this.myName;
           this.users.restoreUsers(msg.data.users);
         } else if (msg.type == 'user-join') {
           // 유저 접속
-          console.log('userjoin' + msg.data);
+          //console.log('userjoin' + msg.data);
           if (msg.data != this.gameModel.mySelf.getName()) {
             this.users.add(new User(msg.data));
           }
@@ -212,16 +217,16 @@ export class RoomComponent implements OnInit, AfterViewInit, OnDestroy {
         } else if (msg.type == 'user-leave') {
           // 유저 msg.data가 나감
           // 삭제
-          console.log('userleave ' + msg.data);
+          //console.log('userleave ' + msg.data);
           this.users.leaveUser(msg.data);
           this.chatList.push(Chat.SysMsg(msg.data + '가 게임을 떠났습니다.'));
         } else if (msg.type == 'room-not-found') {
           //존재하지 않는 방에 입장한 경우
           alert('존재하지 않는 방입니다.');
           this.router.navigateByUrl(`/`);
-        } else if (msg.type == "kick"){
-          this.router.navigateByUrl(`/`);
+        } else if (msg.type == 'kick') {
           alert('추방 당했습니다.');
+          this.router.navigateByUrl(`/`);
         }
       });
 
@@ -232,6 +237,7 @@ export class RoomComponent implements OnInit, AfterViewInit, OnDestroy {
       this.socket.on(
         'game-msg',
         function (msg) {
+          // //console.log(msg);
           this.gameController.msgHandler(msg);
         }.bind(this)
       );
@@ -245,5 +251,12 @@ export class RoomComponent implements OnInit, AfterViewInit, OnDestroy {
   }
   ngOnInit(): void {
     this.initInstances(null);
+    this.checkboxGroupForm = this.formBuilder.group({
+      publicRoom: true,
+    });
+  }
+  setRoomSearchable() {
+    ////console.log(this.checkboxGroupForm.value.publicRoom);
+    this.socket.emit('searchOpt', !this.checkboxGroupForm.value.publicRoom);
   }
 }

@@ -4,10 +4,17 @@
       <span style="color: red">{{ chat.data }}</span>
     </div>
     <div class="row msg" *ngIf="!chat.isSystem">
-      <div class="col-12 col-md-3 e">
+      <div
+        class="col-4 col-md-5 col-lg-4"
+        style="
+          padding-right: 4px;
+          padding-left: 0px;
+          border-right: 1px dashed lightgray;
+        "
+      >
         {{ chat.from }}
       </div>
-      <div class="col-12 col-md-9 e">
+      <div class="col-8 col-md-7 col-lg-8" style="padding-right: 0px; padding-left: 6px">
         {{ chat.data }}
       </div>
     </div>

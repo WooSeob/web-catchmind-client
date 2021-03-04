@@ -1,6 +1,9 @@
 <div class="row justify-content-between">
-  <div class="col-md-10">
-    <h3>{{ myName }} @ Room{{ ROOM_ID }}</h3>
+  <div class="col-9 pad">
+    <h3>
+      <span class="badge bg-dark">Room{{ ROOM_ID }}</span> 
+      <span class="badge bg-secondary" style="margin-left: 10px;">{{ myName }}</span>
+    </h3>
   </div>
   <div class="col-auto">
     <h4 *ngIf="gameModel.timerRun">⏳ {{ gameModel.remainTime }}</h4>
@@ -10,53 +13,66 @@
 <div
   *ngIf="isHost && !gameModel.isInGame"
   id="host-section"
-  style="
-    border: 1px solid lightgray;
-    margin-bottom: 7px;
-    background-color: whitesmoke;
-    padding: 5px;
-  "
+  class="pad"
+  style="margin-bottom: 7px; margin-top: 7px"
 >
-  <form
+  <div
+    style="
+      border: 1px solid lightgray;
+      background-color: whitesmoke;
+      padding: 5px;
+    "
     class="row g-2 justify-content-end align-items-center"
-    *ngIf="!gameModel.isInGame"
   >
+    <label
+      [formGroup]="checkboxGroupForm"
+      class="form-check-label col-auto"
+      style="margin: 0px"
+      ngbButtonLabel
+    >
+      <input
+        class="form-check-input"
+        type="checkbox"
+        formControlName="publicRoom"
+        ngbButton
+        (click)="setRoomSearchable()"
+      />
+      방 검색 허용
+    </label>
+
     <label for="game-round" class="col-auto">라운드</label>
-    <div class="col-auto">
-      <input
-        [(ngModel)]="setRound"
-        name="game-round"
-        type="text"
-        class="form-control btn-sm"
-        id="game-round"
-        value="2"
-      />
-    </div>
+    <input
+      [(ngModel)]="setRound"
+      name="game-round"
+      type="text"
+      class="form-control btn-sm col-4 col-md-1"
+      id="game-round"
+      value="2"
+    />
+
     <label for="game-timeout" class="col-auto">제한시간</label>
-    <div class="col-auto">
-      <input
-        [(ngModel)]="setTimeout"
-        name="game-timeout"
-        type="text"
-        class="form-control btn-sm"
-        id="game-timeout"
-        value="20"
-        placeholder="초 단위로 입력"
-      />
-    </div>
-    <div class="col-auto">
-      <button
-        (click)="gameStart()"
-        type="submit"
-        class="btn btn-primary btn-sm"
-      >
-        게임 시작
-      </button>
-    </div>
-  </form>
+    <input
+      [(ngModel)]="setTimeout"
+      name="game-timeout"
+      type="text"
+      class="form-control btn-sm col-4 col-md-2"
+      id="game-timeout"
+      value="20"
+      placeholder="초 단위로 입력"
+    />
+    <button
+      (click)="gameStart()"
+      type="submit"
+      class="btn btn-primary btn-sm col-auto"
+      style="margin-left: 10px"
+    >
+      게임 시작
+    </button>
+  </div>
 </div>
+
 <div class="row">
-  <div class="col-12 col-md-2">
+  <div class="col-12 col-md-12 col-lg-2 pad" style="margin-top: 7px">
     <app-sidebar
       [users]="users"
       [hostUser]="hostUser"
@@ -64,16 +80,16 @@
       style="padding: 0px; background-color: whitesmoke"
     ></app-sidebar>
   </div>
-  <div class="col-12 col-md-7" style="padding: 0px; height: 100%">
-    <div
-      id="word-section"
-      class="row justify-content-center"
-      style="padding-bottom: 7px"
-    >
+  <div
+    class="col-12 col-md-8 col-lg-7 pad"
+    style="height: 100%; margin-top: 7px"
+  >
+    <div id="word-section" class="row justify-content-center">
       <div
         *ngIf="gameModel.myTurn && gameModel.isPrepare"
         id="word-select"
         class="col-auto"
+        style="padding-top: 7px"
       >
         <div class="btn-group" role="group" aria-label="Basic outlined example">
           <button
@@ -99,20 +115,26 @@
           </button>
         </div>
       </div>
-      <h3 class="col-auto" *ngIf="gameModel.myTurn && gameModel.isGuess">
+      <h3
+        class="col-auto"
+        *ngIf="gameModel.myTurn && gameModel.isGuess"
+        style="padding-top: 7px"
+      >
         {{ gameModel.word }}
       </h3>
-      <h2 class="col-auto" *ngIf="!gameModel.myTurn && gameModel.isGuess">
+      <h2
+        class="col-auto"
+        *ngIf="!gameModel.myTurn && gameModel.isGuess"
+        style="padding-top: 7px"
+      >
         {{ gameModel.wordSecret }}
       </h2>
     </div>
 
     <app-canvas [gameModel]="gameModel" [socket]="socket"></app-canvas>
   </div>
-  <div class="col-12 col-md-3">
-    <div style="border: 1px solid lightgray; background-color: whitesmoke">
-      <app-chat [chatContainer]="chatList" [socket]="socket"></app-chat>
-    </div>
+  <div class="col-12 col-md-4 col-lg-3 pad" style="margin-top: 7px">
+    <app-chat [chatContainer]="chatList" [socket]="socket"></app-chat>
   </div>
 </div>
 
@@ -124,17 +146,25 @@
     <form>
       <div class="mb-3">
         <label for="nick-name" class="col-form-label">닉네임 :</label>
-        <input type="text" class="form-control" id="nick-name" [(ngModel)]="setNickName" name="first"/>
+        <input
+          type="text"
+          class="form-control"
+          id="nick-name"
+          [(ngModel)]="setNickName"
+          name="first"
+        />
       </div>
     </form>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-primary"  (click)="closeModal()">
+    <button type="button" class="btn btn-primary" (click)="closeModal()">
       설정
     </button>
   </div>
 </ng-template>
-<p>test version</p>
-<button class="btn btn-primary btn-sm" (click)="openModal(nickNameRequiredModal)">
+<button
+  class="btn btn-primary btn-sm"
+  (click)="openModal(nickNameRequiredModal)"
+>
   닉네임 설정
 </button>

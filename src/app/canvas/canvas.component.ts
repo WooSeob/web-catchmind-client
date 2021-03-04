@@ -101,6 +101,9 @@ export class CanvasComponent implements OnInit {
   checkGuess(): void {
     if (this.guess !== '') {
       this.socket.emit('game-msg', this.guess);
+      this.inputElement = <HTMLInputElement>(
+        document.getElementById('guess-input')
+      );
       this.inputElement.value = '';
       this.guess = '';
     } else {
@@ -179,9 +182,6 @@ export class CanvasComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.inputElement = <HTMLInputElement>(
-      document.getElementById('guess-input')
-    );
     this.canvas = document.getElementById('canvas') as HTMLCanvasElement;
 
     CanvasController.createInstance(this.canvas);

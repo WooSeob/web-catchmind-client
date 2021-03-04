@@ -3,6 +3,7 @@ import { State } from './State';
 import { ChatContainer, Chat } from '../../model/chat-container';
 import { Hit } from './Guess';
 import { COMMON_KEY } from 'src/app/interfaces';
+import { UserContainer } from 'src/app/model/user-container';
 
 enum KEY {
   TURN_RESULT = 'turn_result',
@@ -26,11 +27,8 @@ export class Result extends State {
     switch (msg.key) {
       case KEY.TURN_RESULT:
         let turnResult: Hit[] = msg.value;
-        //TODO 하나의 턴 끝나고 Score 서버와 싱크 맞추기 추가할것.
-        // let scoreData = msg.data;
-        // for (let user of scoreData) {
-        //   UserContainer.getInstance().setCorrect(user.name, user.score);
-        // }
+        //서버 기준으로 점수 싱크 맞추기
+        UserContainer.getInstance().syncScores(turnResult);
         this.controller.gameModel.turnResult = turnResult
         break;
 

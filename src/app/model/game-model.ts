@@ -111,7 +111,7 @@ export class GameModel {
     for (let i = 0; i < this.word.length; i++) {
       this.wordSecret = this.wordSecret + '_ ';
     }
-    console.log(this.wordSecret);
+    // console.log(this.wordSecret);
   }
 
   private clearState() {

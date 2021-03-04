@@ -16,7 +16,7 @@ export class HomeComponent implements OnInit {
 
   isNameExist: boolean = false;
 
-  setNickName: string;
+  setNickName: string = "";
 
   matchInProgress = false;
   myName: string = 'unknown';
@@ -29,8 +29,8 @@ export class HomeComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.socket = io('ws://172.30.1.20:9999');
-    // this.socket = io('ws://catchm1nd.herokuapp.com/');
+    // this.socket = io('ws://172.30.1.20:9999');
+    this.socket = io('ws://catchm1nd.herokuapp.com/');
 
     this.socket.on('connect', () => {
       console.log('connected');
@@ -63,10 +63,14 @@ export class HomeComponent implements OnInit {
     });
   }
   closeModal() {
-    this.authService.setNoMemberName(this.setNickName);
-    this.myName = this.authService.getUserFullID();
-    this.isNameExist = this.authService.isMemberExist()
-    this.nickNameRequiredModalRef.close();
+    if(this.setNickName != "" && this.setNickName.length < 7){
+      this.authService.setNoMemberName(this.setNickName);
+      this.myName = this.authService.getUserFullID();
+      this.isNameExist = this.authService.isMemberExist()
+      this.nickNameRequiredModalRef.close();
+    }else{
+      alert("닉네임은 6자 이하로 입력해 주세요.")
+    }
   }
   makeRoom() {
     if (this.socket.connected) {
