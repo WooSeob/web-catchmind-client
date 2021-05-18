@@ -1,27 +1,23 @@
-# Catchmind
+1. 개요
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 10.2.0.
+   - '[캐치마인드](https://cmind.netmarble.net/main.asp)'라는 게임을 node.js와 Angular, socket.io를 통해서 웹 버전으로 구현했습니다. 웹서버 프레임워크는 Express를 사용했으며 데이터베이스는 mongoDB를, ODM은 mongoose를 사용했습니다. 객체지향적 특징을 더 잘 활용할 수 있도록 백엔드 또한 TypeScript로 구현했습니다. 
 
-## Development server
+   - DB server는 mongoDB atlas cloud를 사용했으며 프로덕트는 heroku에 배포중입니다.
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+     ![캐치마인드](https://user-images.githubusercontent.com/23726218/118633998-08ffce80-b80d-11eb-8ca1-3850dd3572b7.png)
 
-## Code scaffolding
+     > 자기 차례에 해당하는 유저는 제시어에 대해 그림을 그리고 나머지 유저들은 그림을 통해 제시어를 추측하는 게임입니다.
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+2. 특징
 
-## Build
+   - MAP 자료구조를 통한 방 관리
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+     서버에서 방을 관리하기 위해서 방 id를 키로 하고 방 객체를 값으로 하는 Map을 사용하고 방 찾기 요청이 들어오면 존재하는 방 중 참여인원이 가장 작은방의 id를 반환하거나 새로 방을 생성하고 방의 id를 반환하도록 구현했습니다.
 
-## Running unit tests
+   -  스테이트 패턴과 템플릿 메서드 패턴을 통한 게임 진행 로직 구현
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+      설정된 게임 시간과 라운드 수에 따라 게임은 자동적으로 진행되어야 하고 각 상황마다 유저들이 행할 수 있는 행동이 다르기 때문에 스테이트 패턴을 사용해 게임 진행 로직을 구성했습니다. 또한 스테이트가 바뀔 때마다 클라이언트 모두 스테이트를 동기화하고 필요한 정보를 송신해야 했기 때문에 템플릿 메서드 패턴을 사용했습니다.
 
-## Running end-to-end tests
+   -  스트래티지 패턴을 통한 그리기 모드 구현
 
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+      클라이언트에서 유저가 그림을 그릴 때 펜 모드 인지 지우개 모드인지에 따라 다르게 작동할 수 있도록, 더욱이 다른 그리기 도구가 추가될 가능성을 염두에 두어 스트래티지 패턴을 통해 그림 그리기를 구현했습니다. 
